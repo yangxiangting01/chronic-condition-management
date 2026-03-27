@@ -1,0 +1,737 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>慢病管理平台 - 社区工作台</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<style>
+.doctor-sidebar { background: linear-gradient(180deg,#134e4a 0%,#0f766e 100%); }
+.doctor-sidebar .nav-item.active { border-left-color: #5eead4; }
+.doctor-sidebar .sidebar-logo .logo-icon { background: linear-gradient(135deg,#5eead4,#0d9488); }
+.stat-card-doctor { background:#fff; border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); display:flex; align-items:flex-start; gap:12px; }
+.patient-row { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:var(--radius-sm); transition:background .2s; cursor:pointer; }
+.patient-row:hover { background:var(--bg); }
+.patient-row.urgent { border-left:3px solid var(--danger); background:#fff5f5; }
+.patient-row.warning { border-left:3px solid var(--warning); background:#fffbeb; }
+.risk-badge { font-size:11px; padding:2px 8px; border-radius:20px; font-weight:600; }
+.risk-high { background:#fff5f5; color:var(--danger); }
+.risk-mid  { background:#fffbeb; color:var(--warning); }
+.risk-low  { background:#f0fff4; color:var(--success); }
+.task-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-sm); background:var(--bg); margin-bottom:8px; }
+.task-dot  { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.follow-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+.follow-item:last-child { border-bottom:none; }
+.msg-bubble { padding:10px 14px; border-radius:12px; font-size:13px; line-height:1.6; max-width:85%; }
+.msg-in  { background:var(--bg); border-bottom-left-radius:4px; }
+.msg-out { background:var(--primary); color:#fff; border-bottom-right-radius:4px; margin-left:auto; }
+.msg-row { display:flex; gap:8px; margin-bottom:12px; }
+.msg-row.out { flex-direction:row-reverse; }
+</style>
+</head>
+<body data-page="doctor">
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app-layout">
+
+<!-- Doctor Sidebar -->
+<aside class="sidebar doctor-sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🏥</div>
+    <div class="logo-text">社区工作台<span>社区医疗服务平台</span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-title">工作台</div>
+    <a href="doctor.html" class="nav-item active" data-page="doctor"><span class="nav-icon">🏠</span>工作台首页</a>
+    <a href="#" class="nav-item" onclick="showDoctorPanel('patients');return false"><span class="nav-icon">👥</span>我的患者<span class="nav-badge" id="urgentBadge">2</span></a>
+    <a href="#" class="nav-item" onclick="showDoctorPanel('followup');return false"><span class="nav-icon">📅</span>随访管理</a>
+    <a href="#" class="nav-item" onclick="showDoctorPanel('consult');return false"><span class="nav-icon">💬</span>在线问诊<span class="nav-badge">5</span></a>
+    <div class="nav-section-title">服务管理</div>
+    <a href="#" class="nav-item" onclick="showDoctorPanel('services');return false"><span class="nav-icon">📦</span>服务包管理</a>
+    <a href="#" class="nav-item" onclick="showDoctorPanel('appointments');return false"><span class="nav-icon">🗓️</span>预约管理</a>
+    <a href="#" class="nav-item" onclick="showDoctorPanel('stats');return false"><span class="nav-icon">📊</span>数据统计</a>
+    <div class="nav-section-title">其他</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">👤</span>切换患者端</a>
+    <a href="login.html" class="nav-item"><span class="nav-icon">🚪</span>退出登录</a>
+  </nav>
+  <div class="sidebar-user">
+    <div class="avatar" style="width:36px;height:36px;background:linear-gradient(135deg,#5eead4,#0d9488);font-size:18px">👨‍⚕️</div>
+    <div class="user-info">
+      <div class="user-name" style="color:#fff">测试医生01 医生</div>
+      <div class="user-level" style="color:rgba(255,255,255,.5)">全科医生 · 社区卫生中心</div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="main-content">
+  <div class="top-bar">
+    <button class="hamburger" id="hamburger">☰</button>
+    <div class="page-title" id="doctorPageTitle">👨‍⚕️ 医生工作台</div>
+    <div class="top-bar-actions">
+      <div class="btn-icon tooltip" onclick="App.openModal('doctorNotifyModal')">
+        🔔<div class="badge pulse"></div><span class="tooltip-text">待处理消息</span>
+      </div>
+      <div class="btn-icon tooltip" onclick="App.showToast('医生资料设置','info')">⚙️<span class="tooltip-text">设置</span></div>
+    </div>
+  </div>
+
+  <!-- ===== PANEL: 工作台首页 ===== -->
+  <div id="panel-home" class="page-content">
+    <!-- 核心指标 -->
+    <div class="grid grid-4" style="margin-bottom:16px">
+      <div class="stat-card-doctor">
+        <div class="stat-icon" style="background:#e6fffa;font-size:22px">👥</div>
+        <div class="stat-info">
+          <div class="stat-value" style="color:#0d9488">128</div>
+          <div class="stat-label">签约患者</div>
+          <div class="stat-change up">↑ 本月+6</div>
+        </div>
+      </div>
+      <div class="stat-card-doctor">
+        <div class="stat-icon" style="background:#fff5f5;font-size:22px">🚨</div>
+        <div class="stat-info">
+          <div class="stat-value" style="color:var(--danger)">2</div>
+          <div class="stat-label">高风险预警</div>
+          <div class="stat-change down">需立即处理</div>
+        </div>
+      </div>
+      <div class="stat-card-doctor">
+        <div class="stat-icon" style="background:#ebf8ff;font-size:22px">📅</div>
+        <div class="stat-info">
+          <div class="stat-value" style="color:var(--primary)">8</div>
+          <div class="stat-label">今日待随访</div>
+          <div class="stat-change">已完成 3/8</div>
+        </div>
+      </div>
+      <div class="stat-card-doctor">
+        <div class="stat-icon" style="background:#fffff0;font-size:22px">💬</div>
+        <div class="stat-info">
+          <div class="stat-value" style="color:var(--warning)">5</div>
+          <div class="stat-label">未回复问诊</div>
+          <div class="stat-change down">待处理</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px">
+      <!-- 高风险患者 -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">⚠️ 高风险患者预警</div><div class="card-subtitle">需优先关注</div></div>
+          <button class="btn btn-outline btn-sm" onclick="showDoctorPanel('patients')">查看全部</button>
+        </div>
+        <div id="urgentPatientsContainer"></div>
+      </div>
+      <!-- 今日任务 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 今日工作任务</div>
+          <span class="tag tag-blue">3/8 完成</span>
+        </div>
+        <div id="todayTasksContainer"></div>
+        <div style="margin-top:10px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>今日完成度</span><span style="font-weight:700;color:#0d9488">38%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:38%;background:#0d9488"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-bottom:16px">
+      <!-- 随访日历 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📅 本周随访计划</div>
+          <button class="btn btn-primary btn-sm" onclick="App.openModal('addFollowModal')">+ 新增随访</button>
+        </div>
+        <div id="followupListContainer"></div>
+      </div>
+      <!-- 接诊统计 -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">📊 本月接诊统计</div>
+        <div class="grid grid-2" style="gap:10px;margin-bottom:14px">
+          <div style="padding:12px;background:#e6fffa;border-radius:var(--radius-sm);text-align:center">
+            <div style="font-size:24px;font-weight:800;color:#0d9488">247</div>
+            <div style="font-size:12px;color:var(--text-muted)">本月接诊人次</div>
+          </div>
+          <div style="padding:12px;background:#ebf8ff;border-radius:var(--radius-sm);text-align:center">
+            <div style="font-size:24px;font-weight:800;color:var(--primary)">42</div>
+            <div style="font-size:12px;color:var(--text-muted)">在线问诊回复</div>
+          </div>
+          <div style="padding:12px;background:#f0fff4;border-radius:var(--radius-sm);text-align:center">
+            <div style="font-size:24px;font-weight:800;color:var(--success)">31</div>
+            <div style="font-size:12px;color:var(--text-muted)">随访完成</div>
+          </div>
+          <div style="padding:12px;background:#fffff0;border-radius:var(--radius-sm);text-align:center">
+            <div style="font-size:24px;font-weight:800;color:var(--warning)">18</div>
+            <div style="font-size:12px;color:var(--text-muted)">服务包订单</div>
+          </div>
+        </div>
+        <div style="height:120px"><canvas id="doctorStatsChart" style="width:100%;height:120px"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 患者活跃度 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📈 患者活跃度概览</div>
+        <div style="font-size:12px;color:var(--text-muted)">近7天数据</div>
+      </div>
+      <div class="grid grid-4" style="gap:12px">
+        <div style="text-align:center;padding:14px;background:var(--bg);border-radius:var(--radius-sm)">
+          <div style="font-size:28px;font-weight:800;color:#0d9488">89%</div>
+          <div style="font-size:12px;color:var(--text-muted)">打卡率</div>
+          <div class="progress-bar" style="margin-top:6px"><div class="progress-fill" style="width:89%;background:#0d9488"></div></div>
+        </div>
+        <div style="text-align:center;padding:14px;background:var(--bg);border-radius:var(--radius-sm)">
+          <div style="font-size:28px;font-weight:800;color:var(--primary)">76%</div>
+          <div style="font-size:12px;color:var(--text-muted)">服药依从率</div>
+          <div class="progress-bar" style="margin-top:6px"><div class="progress-fill" style="width:76%;background:var(--primary)"></div></div>
+        </div>
+        <div style="text-align:center;padding:14px;background:var(--bg);border-radius:var(--radius-sm)">
+          <div style="font-size:28px;font-weight:800;color:var(--warning)">63%</div>
+          <div style="font-size:12px;color:var(--text-muted)">运动达标率</div>
+          <div class="progress-bar" style="margin-top:6px"><div class="progress-fill" style="width:63%;background:var(--warning)"></div></div>
+        </div>
+        <div style="text-align:center;padding:14px;background:var(--bg);border-radius:var(--radius-sm)">
+          <div style="font-size:28px;font-weight:800;color:var(--success)">91%</div>
+          <div style="font-size:12px;color:var(--text-muted)">指标记录率</div>
+          <div class="progress-bar" style="margin-top:6px"><div class="progress-fill" style="width:91%;background:var(--success)"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PANEL: 患者列表 ===== -->
+  <div id="panel-patients" class="page-content" style="display:none">
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <input class="form-control" placeholder="🔍 搜索患者姓名/手机号" style="max-width:260px" oninput="filterPatients(this.value)">
+      <select class="form-control" style="max-width:140px" onchange="filterByDisease(this.value)">
+        <option value="">全部病种</option><option>糖尿病</option><option>高血压</option><option>冠心病</option>
+      </select>
+      <select class="form-control" style="max-width:140px">
+        <option>全部风险</option><option>高风险</option><option>中风险</option><option>低风险</option>
+      </select>
+      <button class="btn btn-primary btn-sm" onclick="App.openModal('addPatientModal')">+ 新增患者</button>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">签约患者列表</div>
+        <div style="font-size:12px;color:var(--text-muted)">共 128 名患者</div>
+      </div>
+      <div id="patientListContainer"></div>
+    </div>
+  </div>
+
+  <!-- ===== PANEL: 随访管理 ===== -->
+  <div id="panel-followup" class="page-content" style="display:none">
+    <div class="grid grid-2" style="gap:16px">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📅 随访计划</div>
+          <button class="btn btn-primary btn-sm" onclick="App.openModal('addFollowModal')">+ 新增</button>
+        </div>
+        <div class="tabs" style="margin-bottom:14px">
+          <button class="tab-btn active">今日</button>
+          <button class="tab-btn">本周</button>
+          <button class="tab-btn">本月</button>
+          <button class="tab-btn">逾期</button>
+        </div>
+        <div id="followupDetailContainer"></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">📊 随访统计</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg);border-radius:var(--radius-sm)">
+            <span style="font-size:13px">本月计划随访</span><span style="font-size:18px;font-weight:800;color:#0d9488">45</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg);border-radius:var(--radius-sm)">
+            <span style="font-size:13px">已完成</span><span style="font-size:18px;font-weight:800;color:var(--success)">31</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:#fff5f5;border-radius:var(--radius-sm)">
+            <span style="font-size:13px">逾期未完成</span><span style="font-size:18px;font-weight:800;color:var(--danger)">5</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg);border-radius:var(--radius-sm)">
+            <span style="font-size:13px">完成率</span><span style="font-size:18px;font-weight:800;color:var(--primary)">69%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PANEL: 在线问诊 ===== -->
+  <div id="panel-consult" class="page-content" style="display:none">
+    <div class="grid" style="grid-template-columns:280px 1fr;gap:16px;height:calc(100vh - 120px)">
+      <div class="card" style="overflow-y:auto;padding:12px">
+        <div style="font-size:14px;font-weight:700;margin-bottom:10px">问诊列表</div>
+        <div id="consultListContainer"></div>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;padding:0;overflow:hidden">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="width:36px;height:36px;background:linear-gradient(135deg,#F7B731,#FC5C65);font-size:18px">👩</div>
+          <div>
+            <div style="font-size:14px;font-weight:700">测试用户01</div>
+            <div style="font-size:12px;color:var(--text-muted)">2型糖尿病 · 高血压</div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button class="btn btn-outline btn-sm" onclick="App.showToast('查看患者档案')">📋 档案</button>
+            <button class="btn btn-primary btn-sm" onclick="App.showToast('发起语音通话')">📞 通话</button>
+          </div>
+        </div>
+        <div id="chatContainer" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:4px"></div>
+        <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px">
+          <input class="form-control" id="doctorMsgInput" placeholder="输入回复内容..." onkeydown="if(event.key==='Enter')sendDoctorMsg()">
+          <button class="btn btn-outline btn-sm" onclick="App.showToast('快捷回复模板')">📝</button>
+          <button class="btn btn-primary btn-sm" onclick="sendDoctorMsg()">发送</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PANEL: 服务包管理 ===== -->
+  <div id="panel-services" class="page-content" style="display:none">
+    <div class="grid grid-2" style="gap:16px">
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <div class="card-title">📦 我的服务包</div>
+            <button class="btn btn-primary btn-sm" onclick="App.openModal('addServiceModal')">+ 新建服务包</button>
+          </div>
+          <div id="servicePacksContainer"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">📋 服务订单</div>
+        <div class="tabs" style="margin-bottom:12px">
+          <button class="tab-btn active">待处理</button>
+          <button class="tab-btn">进行中</button>
+          <button class="tab-btn">已完成</button>
+        </div>
+        <div id="serviceOrdersContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PANEL: 预约管理 ===== -->
+  <div id="panel-appointments" class="page-content" style="display:none">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🗓️ 预约管理</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="App.showToast('导出预约表')">📥 导出</button>
+        </div>
+      </div>
+      <div class="tabs" style="margin-bottom:14px">
+        <button class="tab-btn active">今日预约</button>
+        <button class="tab-btn">本周预约</button>
+        <button class="tab-btn">全部预约</button>
+      </div>
+      <div id="appointmentsContainer"></div>
+    </div>
+  </div>
+
+  <!-- ===== PANEL: 数据统计 ===== -->
+  <div id="panel-stats" class="page-content" style="display:none">
+    <div class="grid grid-2" style="gap:16px;margin-bottom:16px">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">患者病种分布</div>
+        <div style="height:200px"><canvas id="diseaseDistChart" style="width:100%;height:200px"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">近30天接诊趋势</div>
+        <div style="height:200px"><canvas id="visitTrendChart" style="width:100%;height:200px"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px">患者健康指标达标率</div>
+      <div class="grid grid-3" style="gap:12px" id="healthRateContainer"></div>
+    </div>
+  </div>
+
+</div><!-- end main-content -->
+</div><!-- end app-layout -->
+<!-- Mobile Nav -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-items">
+    <a href="doctor.html" class="mobile-nav-item active"><span class="mn-icon"></span>工作台</a>
+    <a href="#" class="mobile-nav-item" onclick="showDoctorPanel('patients');return false"><span class="mn-icon"></span>患者</a>
+    <a href="#" class="mobile-nav-item" onclick="showDoctorPanel('consult');return false"><span class="mn-icon"></span>问诊</a>
+    <a href="#" class="mobile-nav-item" onclick="showDoctorPanel('followup');return false"><span class="mn-icon"></span>随访</a>
+    <a href="#" class="mobile-nav-item" onclick="showDoctorPanel('services');return false"><span class="mn-icon"></span>服务</a>
+  </div>
+</nav>
+<!-- Modals -->
+<div class="modal-overlay" id="addFollowModal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title"> 新增随访</div><div class="modal-close" data-modal-close></div></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">患者</label>
+        <select class="form-control"><option>测试用户01</option><option>测试用户02</option><option>测试用户03</option></select></div>
+      <div class="grid grid-2" style="gap:10px">
+        <div class="form-group"><label class="form-label">随访日期</label><input class="form-control" type="date"></div>
+        <div class="form-group"><label class="form-label">随访方式</label>
+          <select class="form-control"><option>电话随访</option><option>上门随访</option><option>门诊随访</option><option>视频随访</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">随访重点</label>
+        <select class="form-control"><option>血压监测</option><option>血糖控制</option><option>用药依从性</option><option>生活方式</option></select></div>
+      <div class="form-group"><label class="form-label">备注</label><textarea class="form-control" rows="2" placeholder="随访要点..."></textarea></div>
+      <button class="btn btn-primary" style="width:100%" onclick="App.showToast('随访计划已添加','success');App.closeModal('addFollowModal')"> 保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addPatientModal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title"> 新增签约患者</div><div class="modal-close" data-modal-close></div></div>
+    <div class="modal-body">
+      <div class="grid grid-2" style="gap:10px">
+        <div class="form-group"><label class="form-label">姓名</label><input class="form-control" placeholder="患者姓名"></div>
+        <div class="form-group"><label class="form-label">手机号</label><input class="form-control" type="tel" placeholder="手机号"></div>
+        <div class="form-group"><label class="form-label">年龄</label><input class="form-control" type="number" placeholder="年龄"></div>
+        <div class="form-group"><label class="form-label">性别</label><select class="form-control"><option>男</option><option>女</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">主要诊断</label>
+        <select class="form-control"><option>2型糖尿病</option><option>高血压</option><option>冠心病</option><option>慢阻肺</option></select></div>
+      <div class="form-group"><label class="form-label">家庭住址</label><input class="form-control" placeholder="社区/街道/门牌号"></div>
+      <button class="btn btn-primary" style="width:100%" onclick="App.showToast('患者已添加','success');App.closeModal('addPatientModal')"> 添加患者</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addServiceModal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title"> 新建服务包</div><div class="modal-close" data-modal-close></div></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">服务包名称</label><input class="form-control" placeholder="如：糖尿病季度管理包"></div>
+      <div class="form-group"><label class="form-label">服务内容</label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" checked> 每月上门随访 1次</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" checked> 每周电话随访 1次</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox" checked> 在线问诊不限次</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox"> 血糖仪租借</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px"><input type="checkbox"> 营养师咨询 2次</label>
+        </div>
+      </div>
+      <div class="grid grid-2" style="gap:10px">
+        <div class="form-group"><label class="form-label">服务周期</label>
+          <select class="form-control"><option>1个月</option><option>3个月</option><option>6个月</option><option>1年</option></select></div>
+        <div class="form-group"><label class="form-label">价格 (元)</label><input class="form-control" type="number" placeholder="如：299"></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="App.showToast('服务包已创建','success');App.closeModal('addServiceModal')"> 创建服务包</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="doctorNotifyModal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title"> 待处理通知</div><div class="modal-close" data-modal-close></div></div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="alert alert-danger"><span>🚨</span><div><div style="font-weight:600">测试用户01 血压异常</div><div style="font-size:12px">血压 158/96，超出安全范围，需立即处理</div></div></div>
+        <div class="alert alert-warning"><span>⚠️</span><div><div style="font-weight:600">测试用户03 血糖偏高</div><div style="font-size:12px">餐后血糖 12.3 mmol/L，建议调整用药</div></div></div>
+        <div class="alert alert-info"><span></span><div><div style="font-weight:600">5条未回复问诊</div><div style="font-size:12px">患者等待回复，请及时处理</div></div></div>
+        <div class="alert alert-info"><span></span><div><div style="font-weight:600">今日随访提醒</div><div style="font-size:12px">还有 5 位患者待随访</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="js/store.js"></script>
+<script src="js/db.js"></script>
+<script src="js/data.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+<script>
+const DOCTOR_DATA = {
+  patients: [
+    { id:1, name:'测试用户01', age:0, gender:'未知', disease:'糖尿病+高血压', risk:'high', bp:'158/96', bs:'8.2', lastVisit:'xxxx年xx月xx日', nextFollow:'xxxx年xx月xx日', avatar:'👨', phone:'138****8888', streak:23, medRate:94 },
+    { id:2, name:'测试用户02', age:0, gender:'未知', disease:'高血压', risk:'mid', bp:'142/88', bs:'5.6', lastVisit:'xxxx年xx月xx日', nextFollow:'xxxx年xx月xx日', avatar:'👩', phone:'139****6666', streak:45, medRate:98 },
+    { id:3, name:'测试用户03', age:0, gender:'未知', disease:'糖尿病', risk:'high', bp:'128/82', bs:'12.3', lastVisit:'xxxx年xx月xx日', nextFollow:'xxxx年xx月xx日', avatar:'👨', phone:'137****5555', streak:38, medRate:87 },
+    { id:4, name:'测试用户04', age:0, gender:'未知', disease:'冠心病', risk:'mid', bp:'135/85', bs:'6.1', lastVisit:'xxxx年xx月xx日', nextFollow:'xxxx年xx月xx日', avatar:'👩', phone:'136****4444', streak:32, medRate:92 },
+    { id:5, name:'测试用户05', age:0, gender:'未知', disease:'高血压', risk:'low', bp:'126/80', bs:'5.8', lastVisit:'xxxx年xx月xx日', nextFollow:'xxxx年xx月xx日', avatar:'👨', phone:'135****3333', streak:29, medRate:96 },
+    { id:6, name:'测试用户06', age:0, gender:'未知', disease:'糖尿病', risk:'low', bp:'122/78', bs:'6.5', lastVisit:'xxxx年xx月xx日', nextFollow:'xxxx年xx月xx日', avatar:'👩', phone:'134****2222', streak:27, medRate:91 }
+  ],
+  followups: [
+    { patient:'测试用户01', type:'电话随访', date:'xxxx年xx月xx日', status:'pending', disease:'糖尿病+高血压', priority:'high' },
+    { patient:'测试用户03', type:'上门随访', date:'xxxx年xx月xx日', status:'pending', disease:'糖尿病', priority:'high' },
+    { patient:'测试用户04', type:'门诊随访', date:'xxxx年xx月xx日', status:'pending', disease:'冠心病', priority:'mid' },
+    { patient:'测试用户02', type:'电话随访', date:'xxxx年xx月xx日', status:'done', disease:'高血压', priority:'low' },
+    { patient:'测试用户05', type:'电话随访', date:'xxxx年xx月xx日', status:'pending', disease:'高血压', priority:'low' }
+  ],
+  consults: [
+    { id:1, patient:'测试用户01', avatar:'👨', disease:'糖尿病+高血压', lastMsg:'医生，我今天血压有点高，需要加药吗？', time:'10分钟前', unread:1 },
+    { id:2, patient:'测试用户03', avatar:'👨', disease:'糖尿病', lastMsg:'餐后血糖12.3，怎么办？', time:'30分钟前', unread:2 },
+    { id:3, patient:'测试用户04', avatar:'👩', disease:'冠心病', lastMsg:'最近胸闷，需要来复诊吗？', time:'1小时前', unread:1 },
+    { id:4, patient:'测试用户06', avatar:'👩', disease:'糖尿病', lastMsg:'二甲双胍可以和阿司匹林一起吃吗？', time:'2小时前', unread:0 },
+    { id:5, patient:'测试用户05', avatar:'👨', disease:'高血压', lastMsg:'血压今天128/80，正常吗？', time:'3小时前', unread:0 }
+  ],
+  servicePacks: [
+    { name:'糖尿病季度管理包', price:299, period:'3个月', orders:12, items:['每月上门随访1次','每周电话随访1次','在线问诊不限次'] },
+    { name:'高血压基础管理包', price:199, period:'3个月', orders:8, items:['每月电话随访2次','在线问诊不限次','血压记录指导'] },
+    { name:'慢病年度健康包', price:899, period:'1年', orders:5, items:['每月上门随访1次','每周电话随访1次','在线问诊不限次','营养师咨询2次'] }
+  ],
+  appointments: [
+    { patient:'测试用户01', type:'上门随访', time:'09:00', address:'xxxx社区xx栋xxx室', status:'confirmed', disease:'糖尿病+高血压' },
+    { patient:'测试用户03', type:'门诊复诊', time:'10:30', address:'社区卫生中心', status:'confirmed', disease:'糖尿病' },
+    { patient:'测试用户04', type:'上门服务', time:'14:00', address:'xxxx社区xx栋xxx室', status:'pending', disease:'冠心病' },
+    { patient:'测试用户02', type:'电话随访', time:'15:30', address:'-', status:'confirmed', disease:'高血压' }
+  ]
+};
+
+const chatMessages = [
+  { role:'patient', text:'医生您好，我今天早上血压测了158/96，比平时高很多，需要加药吗？', time:'10:02' },
+  { role:'doctor', text:'您好，血压偏高了。请问最近睡眠怎么样？有没有情绪波动或者吃了比较咸的食物？', time:'10:05' },
+  { role:'patient', text:'昨晚睡得不太好，可能有点紧张。饮食还好，没有特别咸。', time:'10:06' },
+  { role:'doctor', text:'了解了。先不急着加药，建议您今天多休息，避免情绪激动，下午再测一次血压。如果还是超过150/90，再联系我。', time:'10:08' }
+];
+
+function showDoctorPanel(name) {
+  document.querySelectorAll('[id^="panel-"]').forEach(p => p.style.display = 'none');
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.style.display = 'block';
+  const titles = { home:' 医生工作台', patients:' 我的患者', followup:' 随访管理', consult:' 在线问诊', services:' 服务包管理', appointments:' 预约管理', stats:' 数据统计' };
+  document.getElementById('doctorPageTitle').textContent = titles[name] || '工作台';
+  document.querySelectorAll('.sidebar .nav-item').forEach(i => i.classList.remove('active'));
+  if (name === 'home') renderHome();
+  if (name === 'patients') renderPatients(DOCTOR_DATA.patients);
+  if (name === 'followup') renderFollowupDetail();
+  if (name === 'consult') renderConsult();
+  if (name === 'services') renderServices();
+  if (name === 'appointments') renderAppointments();
+  if (name === 'stats') renderStats();
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  sidebar.classList.remove('open');
+  overlay.classList.remove('open');
+}
+
+function renderHome() {
+  const urgent = DOCTOR_DATA.patients.filter(p => p.risk === 'high');
+  const uc = document.getElementById('urgentPatientsContainer');
+  if (uc) uc.innerHTML = urgent.map(p => `
+    <div class="patient-row urgent" onclick="showDoctorPanel('patients')">
+      <div class="avatar" style="width:40px;height:40px;background:linear-gradient(135deg,#FC5C65,#F7B731);font-size:20px">${p.avatar}</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700">${p.name} <span class="risk-badge risk-high">高风险</span></div>
+        <div style="font-size:12px;color:var(--text-muted)">${p.disease}  血压${p.bp}  血糖${p.bs}</div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();App.showToast('已联系${p.name}','success')">立即联系</button>
+    </div>
+  `).join('');
+
+  const tasks = [
+    { text:'随访 测试用户01（血压异常）', color:'var(--danger)', done:false },
+    { text:'回复 测试用户03 问诊消息', color:'var(--danger)', done:false },
+    { text:'完成 测试用户04 月度随访', color:'var(--warning)', done:false },
+    { text:'审核 3份服务包申请', color:'var(--warning)', done:true },
+    { text:'更新 测试用户02 健康档案', color:'var(--primary)', done:true },
+    { text:'发送 本周健康科普推送', color:'var(--primary)', done:true }
+  ];
+  const tc = document.getElementById('todayTasksContainer');
+  if (tc) tc.innerHTML = tasks.map(t => `
+    <div class="task-item" style="${t.done?'opacity:.5':''}">
+      <div class="task-dot" style="background:${t.color}"></div>
+      <span style="flex:1;font-size:13px;${t.done?'text-decoration:line-through':''}">${t.text}</span>
+      ${t.done ? '<span style="color:var(--success);font-size:16px"></span>' : `<button class="btn btn-outline btn-sm" onclick="App.showToast('任务已完成','success');this.closest('.task-item').style.opacity='.5'">完成</button>`}
+    </div>
+  `).join('');
+
+  const fl = document.getElementById('followupListContainer');
+  if (fl) fl.innerHTML = DOCTOR_DATA.followups.slice(0,4).map(f => `
+    <div class="follow-item">
+      <div style="width:8px;height:8px;border-radius:50%;background:${f.priority==='high'?'var(--danger)':f.priority==='mid'?'var(--warning)':'var(--success)'};flex-shrink:0"></div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600">${f.patient}</div>
+        <div style="font-size:12px;color:var(--text-muted)">${f.type}  ${f.date}</div>
+      </div>
+      <span class="tag ${f.status==='done'?'tag-green':'tag-yellow'}">${f.status==='done'?'已完成':'待随访'}</span>
+    </div>
+  `).join('');
+
+  setTimeout(() => {
+    Charts.bar('doctorStatsChart', ['周一','周二','周三','周四','周五','周六','周日'],
+      [{ data:[8,12,10,15,9,6,7], color:'#0d9488' }], { max:20 });
+  }, 100);
+}
+
+function renderPatients(list) {
+  const c = document.getElementById('patientListContainer');
+  if (!c) return;
+  c.innerHTML = list.map(p => `
+    <div class="patient-row ${p.risk==='high'?'urgent':p.risk==='mid'?'warning':''}">
+      <div class="avatar" style="width:44px;height:44px;background:linear-gradient(135deg,#4ECDC4,#2E86AB);font-size:22px;flex-shrink:0">${p.avatar}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:14px;font-weight:700">${p.name}</span>
+          <span style="font-size:12px;color:var(--text-muted)">${p.age}岁${p.gender}</span>
+          <span class="risk-badge risk-${p.risk}">${p.risk==='high'?'高风险':p.risk==='mid'?'中风险':'低风险'}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${p.disease}  血压${p.bp}  血糖${p.bs}</div>
+        <div style="font-size:12px;color:var(--text-muted)">连续打卡${p.streak}天  服药率${p.medRate}%  下次随访:${p.nextFollow}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn btn-outline btn-sm" onclick="App.showToast('查看${p.name}档案')"></button>
+        <button class="btn btn-outline btn-sm" onclick="App.showToast('联系${p.name}')"></button>
+        <button class="btn btn-primary btn-sm" onclick="App.openModal('addFollowModal')">随访</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterPatients(val) {
+  const filtered = DOCTOR_DATA.patients.filter(p => p.name.includes(val) || p.phone.includes(val));
+  renderPatients(filtered);
+}
+function filterByDisease(val) {
+  const filtered = val ? DOCTOR_DATA.patients.filter(p => p.disease.includes(val)) : DOCTOR_DATA.patients;
+  renderPatients(filtered);
+}
+
+function renderFollowupDetail() {
+  const c = document.getElementById('followupDetailContainer');
+  if (!c) return;
+  c.innerHTML = DOCTOR_DATA.followups.map(f => `
+    <div style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--radius-sm);background:var(--bg);margin-bottom:8px">
+      <div style="width:8px;height:8px;border-radius:50%;background:${f.priority==='high'?'var(--danger)':f.priority==='mid'?'var(--warning)':'var(--success)'};flex-shrink:0"></div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600">${f.patient}</div>
+        <div style="font-size:12px;color:var(--text-muted)">${f.type}  ${f.date}  ${f.disease}</div>
+      </div>
+      <span class="tag ${f.status==='done'?'tag-green':'tag-yellow'}">${f.status==='done'?'已完成':'待随访'}</span>
+      ${f.status!=='done'?`<button class="btn btn-primary btn-sm" onclick="App.showToast('已完成随访','success');this.previousElementSibling.className='tag tag-green';this.previousElementSibling.textContent='已完成';this.remove()">完成</button>`:''}
+    </div>
+  `).join('');
+}
+
+function renderConsult() {
+  const cl = document.getElementById('consultListContainer');
+  if (cl) cl.innerHTML = DOCTOR_DATA.consults.map(c => `
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 8px;border-radius:var(--radius-sm);cursor:pointer;transition:background .2s;${c.unread?'background:#ebf8ff':''}" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='${c.unread?'#ebf8ff':'transparent'}'">
+      <div class="avatar" style="width:36px;height:36px;background:linear-gradient(135deg,#4ECDC4,#2E86AB);font-size:18px;flex-shrink:0">${c.avatar}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;font-weight:700">${c.patient}</span>
+          <span style="font-size:11px;color:var(--text-muted)">${c.time}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.lastMsg}</div>
+      </div>
+      ${c.unread?`<div style="width:18px;height:18px;border-radius:50%;background:var(--danger);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${c.unread}</div>`:''}
+    </div>
+  `).join('');
+
+  const cc = document.getElementById('chatContainer');
+  if (cc) cc.innerHTML = chatMessages.map(m => `
+    <div class="msg-row ${m.role==='doctor'?'out':''}">
+      ${m.role==='patient'?`<div class="avatar" style="width:32px;height:32px;background:linear-gradient(135deg,#F7B731,#FC5C65);font-size:16px;flex-shrink:0"></div>`:''}
+      <div>
+        <div class="msg-bubble ${m.role==='patient'?'msg-in':'msg-out'}">${m.text}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:3px;${m.role==='doctor'?'text-align:right':''}">${m.time}</div>
+      </div>
+    </div>
+  `).join('');
+  if (cc) cc.scrollTop = cc.scrollHeight;
+}
+
+function sendDoctorMsg() {
+  const input = document.getElementById('doctorMsgInput');
+  if (!input || !input.value.trim()) return;
+  const cc = document.getElementById('chatContainer');
+  const div = document.createElement('div');
+  div.className = 'msg-row out';
+  div.innerHTML = `<div><div class="msg-bubble msg-out">${input.value}</div><div style="font-size:11px;color:var(--text-muted);margin-top:3px;text-align:right">刚刚</div></div>`;
+  cc.appendChild(div);
+  cc.scrollTop = cc.scrollHeight;
+  input.value = '';
+}
+
+function renderServices() {
+  const c = document.getElementById('servicePacksContainer');
+  if (c) c.innerHTML = DOCTOR_DATA.servicePacks.map(s => `
+    <div style="border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div style="font-size:14px;font-weight:700">${s.name}</div>
+        <span style="font-size:16px;font-weight:800;color:var(--primary)">${s.price}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">服务周期: ${s.period}  已订购: ${s.orders}人</div>
+      ${s.items.map(i=>`<div style="font-size:12px;color:var(--text);padding:2px 0"> ${i}</div>`).join('')}
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-outline btn-sm" onclick="App.showToast('编辑服务包')">编辑</button>
+        <button class="btn btn-outline btn-sm" onclick="App.showToast('查看订单')">查看订单(${s.orders})</button>
+      </div>
+    </div>
+  `).join('');
+
+  const oc = document.getElementById('serviceOrdersContainer');
+  if (oc) oc.innerHTML = [
+    { patient:'测试用户01', pack:'糖尿病季度管理包', date:'xxxx年xx月xx日', status:'active', price:299 },
+    { patient:'测试用户03', pack:'糖尿病季度管理包', date:'xxxx年xx月xx日', status:'active', price:299 },
+    { patient:'测试用户02', pack:'高血压基础管理包', date:'xxxx年xx月xx日', status:'pending', price:199 }
+  ].map(o => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600">${o.patient}</div>
+        <div style="font-size:12px;color:var(--text-muted)">${o.pack}  ${o.date}</div>
+      </div>
+      <span style="font-size:13px;font-weight:700;color:var(--primary)">${o.price}</span>
+      <span class="tag ${o.status==='active'?'tag-green':'tag-yellow'}">${o.status==='active'?'进行中':'待确认'}</span>
+      ${o.status==='pending'?`<button class="btn btn-primary btn-sm" onclick="App.showToast('已确认订单','success');this.previousElementSibling.textContent='进行中';this.previousElementSibling.className='tag tag-green';this.remove()">确认</button>`:''}
+    </div>
+  `).join('');
+}
+
+function renderAppointments() {
+  const c = document.getElementById('appointmentsContainer');
+  if (!c) return;
+  c.innerHTML = DOCTOR_DATA.appointments.map(a => `
+    <div style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:var(--radius-sm);background:var(--bg);margin-bottom:8px">
+      <div style="font-size:18px;font-weight:800;color:var(--primary);width:48px;text-align:center">${a.time}</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700">${a.patient} <span style="font-size:12px;color:var(--text-muted)"> ${a.disease}</span></div>
+        <div style="font-size:12px;color:var(--text-muted)">${a.type}  ${a.address}</div>
+      </div>
+      <span class="tag ${a.status==='confirmed'?'tag-green':'tag-yellow'}">${a.status==='confirmed'?'已确认':'待确认'}</span>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" onclick="App.showToast('联系患者')">联系</button>
+        <button class="btn btn-primary btn-sm" onclick="App.showToast('已完成','success')">完成</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderStats() {
+  setTimeout(() => {
+    Charts.donut('diseaseDistChart', [52, 38, 22, 16],
+      ['#FC5C65','#2E86AB','#9b59b6','#26de81'],
+      { centerText:'128', centerSubText:'总患者', bg:'#fff' });
+    Charts.line('visitTrendChart',
+      Array.from({length:10},(_,i)=>(i*3+1)+'日'),
+      [{ data:[8,12,9,15,11,14,10,13,12,16], color:'#0d9488', fill:true }],
+      { min:0, max:20 });
+  }, 100);
+
+  const hrc = document.getElementById('healthRateContainer');
+  if (hrc) hrc.innerHTML = [
+    { label:'血压达标率', val:72, color:'var(--primary)' },
+    { label:'血糖达标率', val:68, color:'var(--warning)' },
+    { label:'服药依从率', val:89, color:'var(--success)' },
+    { label:'运动达标率', val:61, color:'#4ECDC4' },
+    { label:'饮食记录率', val:74, color:'#9b59b6' },
+    { label:'随访完成率', val:82, color:'#0d9488' }
+  ].map(item => `
+    <div style="padding:14px;background:var(--bg);border-radius:var(--radius-sm)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:13px">${item.label}</span>
+        <span style="font-size:14px;font-weight:800;color:${item.color}">${item.val}%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${item.val}%;background:${item.color}"></div></div>
+    </div>
+  `).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+  renderHome();
+});
+</script>
+</body>
+</html>
+
