@@ -1,0 +1,206 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>慢病管理平台 - 饮食管理</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+</head>
+<body data-page="diet">
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">💊</div>
+      <div class="logo-text">慢病管理平台<span>健康生活，从今开始</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">主要功能</div>
+      <a href="index.html" class="nav-item" data-page="dashboard"><span class="nav-icon">🏠</span>健康仪表盘</a>
+      <a href="health-record.html" class="nav-item" data-page="health-record"><span class="nav-icon">📋</span>健康档案</a>
+      <a href="medication.html" class="nav-item" data-page="medication"><span class="nav-icon">💊</span>用药管理</a>
+      <a href="diet.html" class="nav-item" data-page="diet"><span class="nav-icon">🥗</span>饮食管理</a>
+      <a href="exercise.html" class="nav-item" data-page="exercise"><span class="nav-icon">🏃</span>运动管理</a>
+      <div class="nav-section-title">社交互动</div>
+      <a href="leaderboard.html" class="nav-item" data-page="leaderboard"><span class="nav-icon">🏆</span>健康排行榜</a>
+      <a href="community.html" class="nav-item" data-page="community"><span class="nav-icon">💬</span>病友社区</a>
+      <div class="nav-section-title">数据分析</div>
+      <a href="report.html" class="nav-item" data-page="report"><span class="nav-icon">📊</span>健康报告</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="avatar" style="width:36px;height:36px;background:linear-gradient(135deg,#4ECDC4,#2E86AB);font-size:18px">👨</div>
+      <div class="user-info">
+        <div class="user-name">测试用户01</div>
+        <div class="user-level">Lv.12 健康达人 · 3840分</div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <button class="hamburger" id="hamburger">☰</button>
+      <div class="page-title">🥗 饮食管理</div>
+      <div class="top-bar-actions">
+        <button class="btn btn-primary btn-sm" id="addFoodBtn">+ 记录饮食</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="alert alert-info">
+        <span>💡</span>
+        <span>糖尿病饮食建议：控制总热量，减少精制碳水，增加膳食纤维，少食多餐，避免高糖食物。</span>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <!-- Nutrition overview -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">今日营养摄入</div>
+            <div style="font-size:12px;color:var(--text-muted)">目标: 1,800 千卡</div>
+          </div>
+          <div class="nutrition-ring-wrap">
+            <div style="flex-shrink:0">
+              <canvas id="nutritionChart" style="width:140px;height:140px"></canvas>
+            </div>
+            <div class="nutrition-legend" id="nutritionLegend"></div>
+          </div>
+          <div style="margin-top:12px">
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+              <span>总热量</span>
+              <span id="calProgressText" style="font-weight:700;color:var(--warning)"></span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="calProgressBar" style="background:var(--warning)"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GI guide -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">🍽️ 血糖生成指数参考</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="padding:10px;background:#f0fff4;border-radius:var(--radius-sm);border-left:4px solid var(--success)">
+              <div style="font-size:12px;font-weight:700;color:var(--success)">低GI食物 (推荐)</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:4px">燕麦、糙米、豆类、大多数蔬菜、苹果、梨</div>
+            </div>
+            <div style="padding:10px;background:#fffbeb;border-radius:var(--radius-sm);border-left:4px solid var(--warning)">
+              <div style="font-size:12px;font-weight:700;color:var(--warning)">中GI食物 (适量)</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:4px">全麦面包、玉米、香蕉、菠萝</div>
+            </div>
+            <div style="padding:10px;background:#fff5f5;border-radius:var(--radius-sm);border-left:4px solid var(--danger)">
+              <div style="font-size:12px;font-weight:700;color:var(--danger)">高GI食物 (避免)</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:4px">白米饭、白面包、糖果、含糖饮料、西瓜</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1.2fr 1fr;gap:16px">
+        <!-- Meals -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">今日饮食记录</div>
+            <button class="btn btn-primary btn-sm" id="addFoodBtn2" onclick="App.openModal('addFoodModal')">+ 添加</button>
+          </div>
+          <div id="mealsContainer"></div>
+        </div>
+
+        <!-- Weekly calories + Tips -->
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title" style="margin-bottom:12px">本周热量趋势</div>
+            <div class="chart-container" style="height:160px">
+              <canvas id="weeklyCalChart" style="width:100%;height:160px"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="margin-bottom:12px">🤖 AI 饮食建议</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:10px;padding:10px;background:var(--bg);border-radius:var(--radius-sm)">
+                <span style="font-size:20px">✅</span>
+                <div style="font-size:13px">今日蛋白质摄入达标，有助于维持肌肉量和血糖稳定</div>
+              </div>
+              <div style="display:flex;gap:10px;padding:10px;background:var(--bg);border-radius:var(--radius-sm)">
+                <span style="font-size:20px">⚠️</span>
+                <div style="font-size:13px">膳食纤维摄入不足，建议晚餐增加绿叶蔬菜</div>
+              </div>
+              <div style="display:flex;gap:10px;padding:10px;background:var(--bg);border-radius:var(--radius-sm)">
+                <span style="font-size:20px">💧</span>
+                <div style="font-size:13px">今日饮水量偏少，建议每天饮水1500-2000ml</div>
+              </div>
+              <div style="display:flex;gap:10px;padding:10px;background:var(--bg);border-radius:var(--radius-sm)">
+                <span style="font-size:20px">🕐</span>
+                <div style="font-size:13px">建议晚餐时间不超过18:30，有助于血糖控制</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="mobile-nav">
+  <div class="mobile-nav-items">
+    <a href="index.html" class="mobile-nav-item" data-page="dashboard"><span class="mn-icon">🏠</span>首页</a>
+    <a href="health-record.html" class="mobile-nav-item" data-page="health-record"><span class="mn-icon">📋</span>档案</a>
+    <a href="medication.html" class="mobile-nav-item" data-page="medication"><span class="mn-icon">💊</span>用药</a>
+    <a href="leaderboard.html" class="mobile-nav-item" data-page="leaderboard"><span class="mn-icon">🏆</span>排行</a>
+    <a href="community.html" class="mobile-nav-item" data-page="community"><span class="mn-icon">💬</span>社区</a>
+  </div>
+</nav>
+
+<div class="modal-overlay" id="addFoodModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🥗 记录饮食</div>
+      <div class="modal-close" data-modal-close>✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="tabs" style="margin-bottom:14px">
+        <button class="tab-btn active">搜索食物</button>
+        <button class="tab-btn">扫描条码</button>
+        <button class="tab-btn">常用食物</button>
+      </div>
+      <div class="form-group">
+        <input class="form-control" placeholder="🔍 搜索食物名称，如：燕麦粥">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:var(--radius-sm);cursor:pointer" onclick="App.showToast('已添加燕麦粥 148千卡','success');App.closeModal('addFoodModal')">
+          <span style="font-size:24px">🥣</span>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600">燕麦粥</div>
+            <div style="font-size:12px;color:var(--text-muted)">148千卡/200g · 低GI</div>
+          </div>
+          <button class="btn btn-primary btn-sm">+ 添加</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:var(--radius-sm);cursor:pointer" onclick="App.showToast('已添加糙米饭 116千卡','success');App.closeModal('addFoodModal')">
+          <span style="font-size:24px">🍚</span>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600">糙米饭</div>
+            <div style="font-size:12px;color:var(--text-muted)">116千卡/100g · 中低GI</div>
+          </div>
+          <button class="btn btn-primary btn-sm">+ 添加</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">餐次</label>
+        <select class="form-control">
+          <option>早餐</option><option>午餐</option><option>晚餐</option><option>加餐</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="App.showToast('饮食记录成功！获得 8 积分','success');App.closeModal('addFoodModal')">✓ 保存记录</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/store.js"></script>
+<script src="js/db.js"></script>
+<script src="js/data.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,267 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>慢病管理平台 - 用药管理</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+</head>
+<body data-page="medication">
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">💊</div>
+      <div class="logo-text">慢病管理平台<span>健康生活，从今开始</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">主要功能</div>
+      <a href="index.html" class="nav-item" data-page="dashboard"><span class="nav-icon">🏠</span>健康仪表盘</a>
+      <a href="health-record.html" class="nav-item" data-page="health-record"><span class="nav-icon">📋</span>健康档案</a>
+      <a href="medication.html" class="nav-item" data-page="medication"><span class="nav-icon">💊</span>用药管理<span class="nav-badge">3</span></a>
+      <a href="diet.html" class="nav-item" data-page="diet"><span class="nav-icon">🥗</span>饮食管理</a>
+      <a href="exercise.html" class="nav-item" data-page="exercise"><span class="nav-icon">🏃</span>运动管理</a>
+      <div class="nav-section-title">社交互动</div>
+      <a href="leaderboard.html" class="nav-item" data-page="leaderboard"><span class="nav-icon">🏆</span>健康排行榜</a>
+      <a href="community.html" class="nav-item" data-page="community"><span class="nav-icon">💬</span>病友社区<span class="nav-badge">5</span></a>
+      <div class="nav-section-title">数据分析</div>
+      <a href="report.html" class="nav-item" data-page="report"><span class="nav-icon">📊</span>健康报告</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="avatar" style="width:36px;height:36px;background:linear-gradient(135deg,#4ECDC4,#2E86AB);font-size:18px">👨</div>
+      <div class="user-info">
+        <div class="user-name">测试用户01</div>
+        <div class="user-level">Lv.12 健康达人 · 3840分</div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <button class="hamburger" id="hamburger">☰</button>
+      <div class="page-title">💊 用药管理</div>
+      <div class="top-bar-actions">
+        <button class="btn btn-primary btn-sm" id="addMedBtn">+ 添加药物</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Stats -->
+      <div class="grid grid-4" style="margin-bottom:16px">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#f0fff4">✅</div>
+          <div class="stat-info">
+            <div class="stat-value" style="color:var(--success)">94%</div>
+            <div class="stat-label">本月服药率</div>
+            <div class="stat-change up">↑ 较上月+3%</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#ebf8ff">💊</div>
+          <div class="stat-info">
+            <div class="stat-value" style="color:var(--primary)">5</div>
+            <div class="stat-label">当前用药数</div>
+            <div class="stat-change">长期用药</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fff5f5">⚠️</div>
+          <div class="stat-info">
+            <div class="stat-value" style="color:var(--danger)">1</div>
+            <div class="stat-label">库存不足</div>
+            <div class="stat-change down">需补充</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fffff0">🔥</div>
+          <div class="stat-info">
+            <div class="stat-value" style="color:var(--warning)">18</div>
+            <div class="stat-label">连续服药天数</div>
+            <div class="stat-change up">↑ 坚持中</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-danger">
+        <span>🚨</span>
+        <span>厄贝沙坦库存不足 (剩余12片)，预计 2026-03-28 用完，请及时补充。</span>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
+        <!-- Med list -->
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-header">
+              <div class="card-title">我的药物清单</div>
+              <div style="font-size:12px;color:var(--text-muted)">今日 2/5 已服</div>
+            </div>
+            <div id="medListContainer"></div>
+          </div>
+
+          <!-- Interaction check -->
+          <div class="card">
+            <div class="card-title" style="margin-bottom:12px">⚠️ 药物相互作用提示</div>
+            <div class="alert alert-warning" style="margin-bottom:8px">
+              <span>⚠️</span>
+              <div>
+                <div style="font-weight:600">二甲双胍 + 阿司匹林</div>
+                <div style="font-size:12px;margin-top:2px">同时服用可能增加低血糖风险，建议间隔1小时服用</div>
+              </div>
+            </div>
+            <div class="alert alert-info">
+              <span>ℹ️</span>
+              <div>
+                <div style="font-weight:600">阿托伐他汀</div>
+                <div style="font-size:12px;margin-top:2px">建议睡前服用，避免与葡萄柚汁同服</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendar + Chart -->
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-header">
+              <div class="card-title">服药日历</div>
+              <div style="display:flex;gap:8px;font-size:12px">
+                <span style="color:var(--success)">● 已服</span>
+                <span style="color:var(--danger)">● 漏服</span>
+              </div>
+            </div>
+            <div class="med-calendar" id="medCalContainer"></div>
+            <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+              <div style="display:flex;justify-content:space-between;font-size:13px">
+                <span>本月服药率</span>
+                <span style="font-weight:700;color:var(--success)">94%</span>
+              </div>
+              <div class="progress-bar" style="margin-top:6px">
+                <div class="progress-fill" style="width:94%;background:var(--success)"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">本周服药情况</div>
+              <div style="font-size:12px;color:var(--text-muted)"><span style="color:var(--success)">● 已服</span> <span style="color:var(--danger)">● 漏服</span></div>
+            </div>
+            <div class="chart-container" style="height:160px">
+              <canvas id="adherenceChart" style="width:100%;height:160px"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reminder settings -->
+      <div class="card" style="margin-top:16px">
+        <div class="card-title" style="margin-bottom:14px">⏰ 服药提醒设置</div>
+        <div class="grid grid-3" style="gap:12px">
+          <div style="padding:14px;border:1.5px solid var(--border);border-radius:var(--radius-sm)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-weight:600">早晨提醒</span>
+              <label style="position:relative;display:inline-block;width:40px;height:22px;cursor:pointer">
+                <input type="checkbox" checked style="opacity:0;width:0;height:0" onchange="App.showToast(this.checked?'早晨提醒已开启':'早晨提醒已关闭')">
+                <span style="position:absolute;inset:0;background:var(--success);border-radius:11px;transition:0.3s"></span>
+                <span style="position:absolute;left:3px;top:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:0.3s;transform:translateX(18px)"></span>
+              </label>
+            </div>
+            <div style="font-size:13px;color:var(--text-muted)">07:00 · 二甲双胍、格列美脲</div>
+          </div>
+          <div style="padding:14px;border:1.5px solid var(--border);border-radius:var(--radius-sm)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-weight:600">上午提醒</span>
+              <label style="position:relative;display:inline-block;width:40px;height:22px;cursor:pointer">
+                <input type="checkbox" checked style="opacity:0;width:0;height:0" onchange="App.showToast(this.checked?'上午提醒已开启':'上午提醒已关闭')">
+                <span style="position:absolute;inset:0;background:var(--success);border-radius:11px;transition:0.3s"></span>
+                <span style="position:absolute;left:3px;top:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:0.3s;transform:translateX(18px)"></span>
+              </label>
+            </div>
+            <div style="font-size:13px;color:var(--text-muted)">08:00 · 厄贝沙坦</div>
+          </div>
+          <div style="padding:14px;border:1.5px solid var(--border);border-radius:var(--radius-sm)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-weight:600">晚间提醒</span>
+              <label style="position:relative;display:inline-block;width:40px;height:22px;cursor:pointer">
+                <input type="checkbox" checked style="opacity:0;width:0;height:0" onchange="App.showToast(this.checked?'晚间提醒已开启':'晚间提醒已关闭')">
+                <span style="position:absolute;inset:0;background:var(--success);border-radius:11px;transition:0.3s"></span>
+                <span style="position:absolute;left:3px;top:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:0.3s;transform:translateX(18px)"></span>
+              </label>
+            </div>
+            <div style="font-size:13px;color:var(--text-muted)">21:00 · 阿托伐他汀</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="mobile-nav">
+  <div class="mobile-nav-items">
+    <a href="index.html" class="mobile-nav-item" data-page="dashboard"><span class="mn-icon">🏠</span>首页</a>
+    <a href="health-record.html" class="mobile-nav-item" data-page="health-record"><span class="mn-icon">📋</span>档案</a>
+    <a href="medication.html" class="mobile-nav-item" data-page="medication"><span class="mn-icon">💊</span>用药</a>
+    <a href="leaderboard.html" class="mobile-nav-item" data-page="leaderboard"><span class="mn-icon">🏆</span>排行</a>
+    <a href="community.html" class="mobile-nav-item" data-page="community"><span class="mn-icon">💬</span>社区</a>
+  </div>
+</nav>
+
+<!-- Add Med Modal -->
+<div class="modal-overlay" id="addMedModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">💊 添加药物</div>
+      <div class="modal-close" data-modal-close>✕</div>
+    </div>
+    <div class="modal-body">
+      <form id="addMedForm">
+        <div class="form-group">
+          <label class="form-label">药物名称 *</label>
+          <input class="form-control" placeholder="如：二甲双胍" required>
+        </div>
+        <div class="grid grid-2" style="gap:10px">
+          <div class="form-group">
+            <label class="form-label">剂量 *</label>
+            <input class="form-control" placeholder="如：500mg" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">服用频率 *</label>
+            <select class="form-control" required>
+              <option>每日1次</option><option>每日2次</option><option>每日3次</option><option>隔日1次</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-2" style="gap:10px">
+          <div class="form-group">
+            <label class="form-label">服用时间</label>
+            <input class="form-control" type="time" value="08:00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">当前库存 (片)</label>
+            <input class="form-control" type="number" placeholder="如：30">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">适应症</label>
+          <select class="form-control">
+            <option>糖尿病</option><option>高血压</option><option>冠心病</option><option>高血脂</option><option>其他</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">备注</label>
+          <textarea class="form-control" rows="2" placeholder="如：饭后服用，避免空腹"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%">✓ 添加药物</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="js/store.js"></script>
+<script src="js/db.js"></script>
+<script src="js/data.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
+

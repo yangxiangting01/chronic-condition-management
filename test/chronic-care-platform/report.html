@@ -1,0 +1,198 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>慢病管理平台 - 健康报告</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+</head>
+<body data-page="report">
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">💊</div>
+      <div class="logo-text">慢病管理平台<span>健康生活，从今开始</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">主要功能</div>
+      <a href="index.html" class="nav-item" data-page="dashboard"><span class="nav-icon">🏠</span>健康仪表盘</a>
+      <a href="health-record.html" class="nav-item" data-page="health-record"><span class="nav-icon">📋</span>健康档案</a>
+      <a href="medication.html" class="nav-item" data-page="medication"><span class="nav-icon">💊</span>用药管理</a>
+      <a href="diet.html" class="nav-item" data-page="diet"><span class="nav-icon">🥗</span>饮食管理</a>
+      <a href="exercise.html" class="nav-item" data-page="exercise"><span class="nav-icon">🏃</span>运动管理</a>
+      <div class="nav-section-title">社交互动</div>
+      <a href="leaderboard.html" class="nav-item" data-page="leaderboard"><span class="nav-icon">🏆</span>健康排行榜</a>
+      <a href="community.html" class="nav-item" data-page="community"><span class="nav-icon">💬</span>病友社区</a>
+      <div class="nav-section-title">数据分析</div>
+      <a href="report.html" class="nav-item" data-page="report"><span class="nav-icon">📊</span>健康报告</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="avatar" style="width:36px;height:36px;background:linear-gradient(135deg,#4ECDC4,#2E86AB);font-size:18px">👨</div>
+      <div class="user-info">
+        <div class="user-name">测试用户01</div>
+        <div class="user-level">Lv.12 健康达人 · 3840分</div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <button class="hamburger" id="hamburger">☰</button>
+      <div class="page-title">📊 健康报告</div>
+      <div class="top-bar-actions">
+        <button class="btn btn-outline btn-sm" onclick="App.showToast('报告已生成PDF，请查收','success')">📥 导出报告</button>
+        <button class="btn btn-primary btn-sm" onclick="App.showToast('已分享给主治医生','success')">📤 分享给医生</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Report header -->
+      <div style="background:linear-gradient(135deg,#1a365d,#2E86AB);border-radius:var(--radius);padding:24px;color:#fff;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-size:20px;font-weight:800">测试用户01 · 月度健康报告</div>
+            <div style="font-size:14px;opacity:0.8;margin-top:4px">2026年3月 · 2型糖尿病 + 高血压</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:48px;font-weight:900">78</div>
+            <div style="font-size:13px;opacity:0.8">综合健康评分</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap">
+          <div style="background:rgba(255,255,255,0.15);padding:10px 16px;border-radius:20px;font-size:13px">
+            📅 记录天数: <strong>24天</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.15);padding:10px 16px;border-radius:20px;font-size:13px">
+            💊 服药率: <strong>94%</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.15);padding:10px 16px;border-radius:20px;font-size:13px">
+            🏃 运动天数: <strong>18天</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.15);padding:10px 16px;border-radius:20px;font-size:13px">
+            📊 指标记录: <strong>86次</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Period selector -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="tabs">
+          <button class="tab-btn active" onclick="App.showToast('切换到本月')">本月</button>
+          <button class="tab-btn" onclick="App.showToast('切换到近3月')">近3月</button>
+          <button class="tab-btn" onclick="App.showToast('切换到近6月')">近6月</button>
+          <button class="tab-btn" onclick="App.showToast('切换到近1年')">近1年</button>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-bottom:16px">
+        <!-- Metrics summary -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">指标汇总</div>
+          <div id="reportMetricsContainer"></div>
+        </div>
+
+        <!-- Radar chart -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">健康雷达图</div>
+          <div class="chart-container" style="height:240px">
+            <canvas id="radarChart" style="width:100%;height:240px"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- BP chart -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <div>
+            <div class="card-title">血压月度趋势</div>
+            <div class="card-subtitle"><span style="color:#FC5C65">● 收缩压</span> &nbsp; <span style="color:#2E86AB">● 舒张压</span> &nbsp; 目标: &lt;130/80 mmHg</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <span class="tag tag-red">均值: 129/83</span>
+            <span class="tag tag-yellow">偏高天数: 8天</span>
+          </div>
+        </div>
+        <div class="chart-container" style="height:200px">
+          <canvas id="bpMonthChart" style="width:100%;height:200px"></canvas>
+        </div>
+      </div>
+
+      <!-- BS chart -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <div>
+            <div class="card-title">血糖月度趋势</div>
+            <div class="card-subtitle">空腹血糖 · 目标: 4.4-7.0 mmol/L</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <span class="tag tag-yellow">均值: 6.9</span>
+            <span class="tag tag-green">达标率: 82%</span>
+          </div>
+        </div>
+        <div class="chart-container" style="height:200px">
+          <canvas id="bsMonthChart" style="width:100%;height:200px"></canvas>
+        </div>
+      </div>
+
+      <!-- AI Analysis -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🤖 AI 健康分析报告</div>
+          <span class="tag tag-blue">AI 生成</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="padding:14px;background:#f0fff4;border-radius:var(--radius-sm);border-left:4px solid var(--success)">
+            <div style="font-size:14px;font-weight:700;color:var(--success);margin-bottom:6px">✅ 本月亮点</div>
+            <ul style="font-size:13px;color:var(--text);line-height:1.8;padding-left:16px">
+              <li>服药依从性达94%，较上月提升3%，继续保持</li>
+              <li>糖化血红蛋白从7.8%降至6.9%，血糖控制显著改善</li>
+              <li>运动坚持18天，累计运动时长超过900分钟</li>
+              <li>体重从73.2kg降至72.5kg，BMI维持正常范围</li>
+            </ul>
+          </div>
+          <div style="padding:14px;background:#fffbeb;border-radius:var(--radius-sm);border-left:4px solid var(--warning)">
+            <div style="font-size:14px;font-weight:700;color:var(--warning);margin-bottom:6px">⚠️ 需要关注</div>
+            <ul style="font-size:13px;color:var(--text);line-height:1.8;padding-left:16px">
+              <li>血压控制不稳定，本月有8天收缩压超过130mmHg</li>
+              <li>舒张压均值83mmHg，略超目标值，建议减少钠盐摄入</li>
+              <li>膳食纤维摄入不足，平均每日18g，建议增加至25g以上</li>
+            </ul>
+          </div>
+          <div style="padding:14px;background:#ebf8ff;border-radius:var(--radius-sm);border-left:4px solid var(--primary)">
+            <div style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:6px">💡 下月建议</div>
+            <ul style="font-size:13px;color:var(--text);line-height:1.8;padding-left:16px">
+              <li>建议4月初复诊，评估血压控制方案是否需要调整</li>
+              <li>增加每日蔬菜摄入量，特别是深色蔬菜</li>
+              <li>保持当前运动频率，可适当增加运动强度</li>
+              <li>注意厄贝沙坦库存，及时补充</li>
+            </ul>
+          </div>
+        </div>
+        <div style="margin-top:14px;padding:12px;background:var(--bg);border-radius:var(--radius-sm);font-size:12px;color:var(--text-muted)">
+          ⚠️ 本报告由AI辅助生成，仅供参考，不构成医疗建议。如有疑问请咨询专业医生。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="mobile-nav">
+  <div class="mobile-nav-items">
+    <a href="index.html" class="mobile-nav-item" data-page="dashboard"><span class="mn-icon">🏠</span>首页</a>
+    <a href="health-record.html" class="mobile-nav-item" data-page="health-record"><span class="mn-icon">📋</span>档案</a>
+    <a href="medication.html" class="mobile-nav-item" data-page="medication"><span class="mn-icon">💊</span>用药</a>
+    <a href="leaderboard.html" class="mobile-nav-item" data-page="leaderboard"><span class="mn-icon">🏆</span>排行</a>
+    <a href="community.html" class="mobile-nav-item" data-page="community"><span class="mn-icon">💬</span>社区</a>
+  </div>
+</nav>
+
+<script src="js/store.js"></script>
+<script src="js/db.js"></script>
+<script src="js/data.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
+

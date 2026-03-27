@@ -1,0 +1,229 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>慢病管理平台 - 病友社区</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+</head>
+<body data-page="community">
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">💊</div>
+      <div class="logo-text">慢病管理平台<span>健康生活，从今开始</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">主要功能</div>
+      <a href="index.html" class="nav-item" data-page="dashboard"><span class="nav-icon">🏠</span>健康仪表盘</a>
+      <a href="health-record.html" class="nav-item" data-page="health-record"><span class="nav-icon">📋</span>健康档案</a>
+      <a href="medication.html" class="nav-item" data-page="medication"><span class="nav-icon">💊</span>用药管理</a>
+      <a href="diet.html" class="nav-item" data-page="diet"><span class="nav-icon">🥗</span>饮食管理</a>
+      <a href="exercise.html" class="nav-item" data-page="exercise"><span class="nav-icon">🏃</span>运动管理</a>
+      <div class="nav-section-title">智能服务</div>
+      <a href="ai-consult.html" class="nav-item"><span class="nav-icon">🤖</span>AI问诊室</a>
+      <a href="services.html" class="nav-item"><span class="nav-icon">🏠</span>社区服务</a>
+      <a href="shop.html" class="nav-item"><span class="nav-icon">🛒</span>中草药商城</a>
+      <a href="wellness.html" class="nav-item"><span class="nav-icon">🧘</span>养生课堂</a>
+      <div class="nav-section-title">社交互动</div>
+      <a href="leaderboard.html" class="nav-item" data-page="leaderboard"><span class="nav-icon">🏆</span>健康排行榜</a>
+      <a href="community.html" class="nav-item" data-page="community"><span class="nav-icon">💬</span>病友社区<span class="nav-badge">5</span></a>
+      <div class="nav-section-title">数据分析</div>
+      <a href="report.html" class="nav-item" data-page="report"><span class="nav-icon">📊</span>健康报告</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="avatar" style="width:36px;height:36px;background:linear-gradient(135deg,#4ECDC4,#2E86AB);font-size:18px">👨</div>
+      <div class="user-info">
+        <div class="user-name">测试用户01</div>
+        <div class="user-level">Lv.12 健康达人 · 3840分</div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <button class="hamburger" id="hamburger">☰</button>
+      <div class="page-title">💬 病友社区</div>
+      <div class="top-bar-actions">
+        <button class="btn btn-primary btn-sm" id="newPostBtn">✏️ 发布动态</button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="grid" style="grid-template-columns:1fr 300px;gap:16px">
+        <!-- Posts feed -->
+        <div>
+          <!-- Filter tabs -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="tabs">
+              <button class="tab-btn active" onclick="App.showToast('已切换到全部动态')">全部</button>
+              <button class="tab-btn" onclick="App.showToast('已切换到糖尿病')">糖尿病</button>
+              <button class="tab-btn" onclick="App.showToast('已切换到高血压')">高血压</button>
+              <button class="tab-btn" onclick="App.showToast('已切换到冠心病')">冠心病</button>
+              <button class="tab-btn" onclick="App.showToast('已切换到关注')">关注</button>
+            </div>
+          </div>
+
+          <div id="postsContainer"></div>
+
+          <!-- Load more -->
+          <div style="text-align:center;padding:16px">
+            <button class="btn btn-outline" onclick="App.showToast('加载更多中...','info')">加载更多动态</button>
+          </div>
+        </div>
+
+        <!-- Right sidebar -->
+        <div>
+          <!-- Hot topics -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title" style="margin-bottom:12px">🔥 热门话题</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px;border-radius:var(--radius-sm);transition:background 0.2s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='transparent'" onclick="App.showToast('进入话题：血糖控制经验分享')">
+                <span style="font-size:16px;font-weight:800;color:var(--danger)">1</span>
+                <div>
+                  <div style="font-size:13px;font-weight:600">#血糖控制经验分享</div>
+                  <div style="font-size:11px;color:var(--text-muted)">2,341 讨论</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px;border-radius:var(--radius-sm);transition:background 0.2s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='transparent'" onclick="App.showToast('进入话题：低盐饮食技巧')">
+                <span style="font-size:16px;font-weight:800;color:var(--warning)">2</span>
+                <div>
+                  <div style="font-size:13px;font-weight:600">#低盐饮食技巧</div>
+                  <div style="font-size:11px;color:var(--text-muted)">1,876 讨论</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px;border-radius:var(--radius-sm);transition:background 0.2s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='transparent'" onclick="App.showToast('进入话题：适合慢病患者的运动')">
+                <span style="font-size:16px;font-weight:800;color:var(--primary)">3</span>
+                <div>
+                  <div style="font-size:13px;font-weight:600">#适合慢病患者的运动</div>
+                  <div style="font-size:11px;color:var(--text-muted)">1,542 讨论</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px;border-radius:var(--radius-sm);transition:background 0.2s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='transparent'">
+                <span style="font-size:16px;font-weight:800;color:var(--text-muted)">4</span>
+                <div>
+                  <div style="font-size:13px;font-weight:600">#用药副作用讨论</div>
+                  <div style="font-size:11px;color:var(--text-muted)">1,203 讨论</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px;border-radius:var(--radius-sm);transition:background 0.2s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='transparent'">
+                <span style="font-size:16px;font-weight:800;color:var(--text-muted)">5</span>
+                <div>
+                  <div style="font-size:13px;font-weight:600">#心理健康与慢病</div>
+                  <div style="font-size:11px;color:var(--text-muted)">987 讨论</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expert Q&A -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title" style="margin-bottom:12px">👨‍⚕️ 专家问答</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="padding:10px;background:var(--bg);border-radius:var(--radius-sm);cursor:pointer" onclick="App.showToast('进入专家问答')">
+                <div style="font-size:13px;font-weight:600;margin-bottom:4px">二甲双胍饭前还是饭后服用？</div>
+                <div style="font-size:12px;color:var(--text-muted)">内分泌科 · 李医生 · 已回答</div>
+              </div>
+              <div style="padding:10px;background:var(--bg);border-radius:var(--radius-sm);cursor:pointer" onclick="App.showToast('进入专家问答')">
+                <div style="font-size:13px;font-weight:600;margin-bottom:4px">高血压患者能喝咖啡吗？</div>
+                <div style="font-size:12px;color:var(--text-muted)">心内科 · 王医生 · 已回答</div>
+              </div>
+              <div style="padding:10px;background:var(--bg);border-radius:var(--radius-sm);cursor:pointer" onclick="App.showToast('进入专家问答')">
+                <div style="font-size:13px;font-weight:600;margin-bottom:4px">糖尿病患者如何选择水果？</div>
+                <div style="font-size:12px;color:var(--text-muted)">营养科 · 张医生 · 已回答</div>
+              </div>
+            </div>
+            <button class="btn btn-outline btn-sm" style="width:100%;margin-top:10px" onclick="App.showToast('向专家提问功能开发中','info')">向专家提问</button>
+          </div>
+
+          <!-- Active users -->
+          <div class="card">
+            <div class="card-title" style="margin-bottom:12px">👥 活跃病友</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="avatar" style="width:36px;height:36px;background:linear-gradient(135deg,#FC5C65,#F7B731);font-size:16px">👩</div>
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:600">测试用户02</div>
+                  <div style="font-size:11px;color:var(--text-muted)">高血压 · 连续45天</div>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="App.showToast('已关注测试用户02','success')">关注</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="avatar" style="width:36px;height:36px;background:linear-gradient(135deg,#4ECDC4,#2E86AB);font-size:16px">👨</div>
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:600">测试用户03</div>
+                  <div style="font-size:11px;color:var(--text-muted)">糖尿病 · 连续38天</div>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="App.showToast('已关注测试用户03','success')">关注</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="avatar" style="width:36px;height:36px;background:linear-gradient(135deg,#9b59b6,#FC5C65);font-size:16px">👩</div>
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:600">测试用户04</div>
+                  <div style="font-size:11px;color:var(--text-muted)">冠心病 · 连续32天</div>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="App.showToast('已关注测试用户04','success')">关注</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="mobile-nav">
+  <div class="mobile-nav-items">
+    <a href="index.html" class="mobile-nav-item" data-page="dashboard"><span class="mn-icon">🏠</span>首页</a>
+    <a href="health-record.html" class="mobile-nav-item" data-page="health-record"><span class="mn-icon">📋</span>档案</a>
+    <a href="medication.html" class="mobile-nav-item" data-page="medication"><span class="mn-icon">💊</span>用药</a>
+    <a href="leaderboard.html" class="mobile-nav-item" data-page="leaderboard"><span class="mn-icon">🏆</span>排行</a>
+    <a href="community.html" class="mobile-nav-item" data-page="community"><span class="mn-icon">💬</span>社区</a>
+  </div>
+</nav>
+
+<button class="fab" onclick="App.openModal('newPostModal')">✏️</button>
+
+<div class="modal-overlay" id="newPostModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✏️ 发布动态</div>
+      <div class="modal-close" data-modal-close>✕</div>
+    </div>
+    <div class="modal-body">
+      <form id="newPostForm">
+        <div class="form-group">
+          <textarea class="form-control" rows="5" placeholder="分享您的健康心得、用药经验或生活感悟..." required style="resize:none"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">话题标签</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <button type="button" class="tag tag-blue" onclick="this.style.background='var(--primary)';this.style.color='#fff'">#血糖管理</button>
+            <button type="button" class="tag tag-red" onclick="this.style.background='var(--danger)';this.style.color='#fff'">#血压控制</button>
+            <button type="button" class="tag tag-green" onclick="this.style.background='var(--success)';this.style.color='#fff'">#健康饮食</button>
+            <button type="button" class="tag tag-yellow" onclick="this.style.background='var(--warning)';this.style.color='#fff'">#运动打卡</button>
+            <button type="button" class="tag tag-purple" onclick="this.style.background='#9b59b6';this.style.color='#fff'">#用药经验</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">可见范围</label>
+          <select class="form-control">
+            <option>所有人</option><option>仅同病种病友</option><option>仅关注者</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%">🚀 发布动态</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="js/store.js"></script>
+<script src="js/db.js"></script>
+<script src="js/data.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
+
